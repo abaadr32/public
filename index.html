@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>FootballBZ — Live Scores</title>
 <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Barlow+Condensed:ital,wght@0,400;0,600;0,700;0,800;0,900;1,700;1,900&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
 
@@ -79,7 +79,6 @@
   </button>
 </nav>
 
-<!-- HOME PAGE -->
 <div class="page active" id="page-home">
   <div class="container">
     <div class="home-grid">
@@ -102,7 +101,6 @@
   </div>
 </div>
 
-<!-- TOURNAMENTS PAGE -->
 <div class="page" id="page-tournaments">
   <div class="container">
     <div class="sh"><div class="sh-accent"></div><h2>Tournaments</h2></div>
@@ -116,7 +114,6 @@
   </div>
 </div>
 
-<!-- STANDINGS PAGE -->
 <div class="page" id="page-standings">
   <div class="container">
     <div class="sh"><div class="sh-accent"></div><h2>Standings</h2></div>
@@ -125,7 +122,6 @@
   </div>
 </div>
 
-<!-- BRACKET PAGE -->
 <div class="page" id="page-bracket">
   <div class="container">
     <div class="sh"><div class="sh-accent"></div><h2>Cup Draw</h2><span class="chip c-blue" style="font-size:11px;display:inline-block">Youth Cup U16</span></div>
@@ -133,7 +129,6 @@
   </div>
 </div>
 
-<!-- MATCH DETAIL PAGE -->
 <div class="page" id="page-match">
   <div class="container">
     <button class="back-btn" onclick="navigate('home',document.querySelector('[data-page=home]'))"><svg style="width:16px;height:16px;vertical-align:middle;margin-right:6px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>Back</button>
@@ -141,7 +136,6 @@
   </div>
 </div>
 
-<!-- TEAMS PAGE -->
 <div class="page" id="page-teams">
   <div class="container">
     <div class="sh"><div class="sh-accent"></div><h2>Teams</h2><span class="sh-count" id="teamsCount"></span></div>
@@ -158,15 +152,25 @@
   </div>
 </div>
 
-<footer><strong>FootballBZ</strong> — Live Scores &amp; Results · Powered by Football Tracker · <span style="opacity:.5">Data supplied by tournament managers</span></footer>
+<footer><strong>FootballBZ</strong> — Live Scores & Results · Powered by Football Tracker · <span style="opacity:.5">Data supplied by tournament managers</span></footer>
 
-<!-- CLASH OVERLAY -->
+<!-- ═══════════════════════════════════════════
+     CLASH OVERLAY HTML
+═══════════════════════════════════════════ -->
 <div id="clashOverlay" style="display:none; position:fixed; inset:0; z-index:9999; align-items:center; justify-content:center; background:#020916; overflow:hidden; cursor:pointer;">
   <canvas id="clashCanvas" style="position:absolute;inset:0;pointer-events:none;z-index:2;"></canvas>
+
+  <!-- split background halves -->
   <div class="c-bg-home"></div>
   <div class="c-bg-away"></div>
+
+  <!-- stadium grid overlay -->
   <div class="c-grid"></div>
+
+  <!-- CONTENT LAYER -->
   <div class="c-stage">
+
+    <!-- HOME TEAM — charges from LEFT -->
     <div class="c-side c-side-home">
       <div class="c-av-orbit">
         <div class="c-av-ring c-ring1"></div>
@@ -176,12 +180,16 @@
       <div id="c_homeName" class="c-name">Corozal FC</div>
       <div class="c-city-label" id="c_homeCity"></div>
     </div>
+
+    <!-- CENTER IMPACT ZONE -->
     <div class="c-impact-zone">
       <div class="c-vs-glow"></div>
       <div id="c_vs" class="c-vs" style="opacity:0;transform:scale(0) rotate(-20deg);">VS</div>
       <div id="c_score" class="c-score" style="opacity:0;transform:scale(1.2)"></div>
       <div id="c_live" class="c-live-pill" style="opacity:0"></div>
     </div>
+
+    <!-- AWAY TEAM — charges from RIGHT -->
     <div class="c-side c-side-away">
       <div class="c-av-orbit">
         <div class="c-av-ring c-ring1" style="animation-direction:reverse;animation-delay:.4s"></div>
@@ -191,12 +199,13 @@
       <div id="c_awayName" class="c-name">OW United</div>
       <div class="c-city-label" id="c_awayCity"></div>
     </div>
-  </div>
+
+  </div><!-- /c-stage -->
+
+  <!-- skip hint -->
   <div id="c_hint" class="c-hint" style="opacity:0">TAP ANYWHERE TO CONTINUE →</div>
 </div>
 
-<!-- Scripts — data first, then app logic -->
-<script src="data.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

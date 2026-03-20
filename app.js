@@ -1,3 +1,186 @@
+const APP={liveMatches:[],upcomingMatches:[],recentResults:[],tournaments:[],standings:{},bracket:null,teams:[],matchDetail:null,loadedPages:{}};
+
+/* ═══════════════════════════════════════
+   MOCK DATA — BELIZE FOOTBALL SIMULATION
+═══════════════════════════════════════ */
+const MOCK = {
+  liveMatches: [
+    { id:1, tournament:'Orange Walk Premier League', tournament_name:'Orange Walk Premier League', round:'Week 8', status:'live', minute:67, home_score:2, away_score:1, venue:'People\'s Stadium, O.W.', date:'Mar 19', time:'7:30 PM',
+      home:{name:'Corozal FC', code:'COR', city:'Corozal Town'}, away:{name:'Orange Walk United', code:'OWU', city:'Orange Walk'} },
+    { id:2, tournament:'Belize Premier Football League', tournament_name:'Belize Premier Football League', round:'Matchday 12', status:'live', minute:34, home_score:0, away_score:0, venue:'FFB Stadium, Belmopan', date:'Mar 19', time:'9:00 PM',
+      home:{name:'Belmopan Bandits', code:'BAN', city:'Belmopan'}, away:{name:'Altitude FC', code:'ALT', city:'San Ignacio'} }
+  ],
+  upcomingMatches: [
+    { id:3, tournament:'Orange Walk District Cup', tournament_name:'Orange Walk District Cup', round:'Semifinal', status:'scheduled', home_score:null, away_score:null, venue:'Laguna Park, Corozal', date:'Mar 22', time:'4:00 PM',
+      home:{name:'San Jose FC', code:'SJF', city:'San Jose Village'}, away:{name:'Yo Creek Ballers', code:'YCB', city:'Yo Creek'} },
+    { id:4, tournament:'Belize Premier Football League', tournament_name:'BPFL', round:'Matchday 13', status:'scheduled', home_score:null, away_score:null, venue:'Marion Jones Stadium', date:'Mar 23', time:'7:00 PM',
+      home:{name:'Verdes FC', code:'VER', city:'Benque Viejo'}, away:{name:'Belmopan Bandits', code:'BAN', city:'Belmopan'} },
+    { id:5, tournament:'U16 Youth Cup', tournament_name:'U16 Youth Cup', round:'Quarterfinal', status:'scheduled', home_score:null, away_score:null, venue:'People\'s Stadium', date:'Mar 24', time:'3:00 PM',
+      home:{name:'OW Youngsters', code:'OWY', city:'Orange Walk'}, away:{name:'Corozal Youth', code:'CYT', city:'Corozal'} },
+    { id:6, tournament:'Orange Walk Premier League', tournament_name:'OW Premier League', round:'Week 9', status:'scheduled', home_score:null, away_score:null, venue:'People\'s Stadium', date:'Mar 26', time:'7:30 PM',
+      home:{name:'Guinea Grass FC', code:'GGF', city:'Guinea Grass'}, away:{name:'San Estevan FC', code:'SEF', city:'San Estevan'} }
+  ],
+  recentResults: [
+    { id:7, tournament:'Orange Walk Premier League', round:'Week 7', status:'confirmed', home_score:3, away_score:1, venue:'People\'s Stadium', date:'Mar 15', time:'7:30 PM',
+      home:'Corozal FC', away:'Guinea Grass FC' },
+    { id:8, tournament:'BPFL', round:'Matchday 11', status:'confirmed', home_score:2, away_score:2, venue:'FFB Stadium', date:'Mar 14', time:'9:00 PM',
+      home:'Altitude FC', away:'Verdes FC' },
+    { id:9, tournament:'OW District Cup', round:'QF', status:'confirmed', home_score:1, away_score:0, venue:'Laguna Park', date:'Mar 12', time:'4:00 PM',
+      home:'San Jose FC', away:'Douglas FC' },
+    { id:10, tournament:'BPFL', round:'Matchday 11', status:'confirmed', home_score:4, away_score:0, venue:'MCC Grounds', date:'Mar 12', time:'7:00 PM',
+      home:'Belmopan Bandits', away:'Wagiya FC' },
+    { id:11, tournament:'Orange Walk Premier League', round:'Week 7', status:'confirmed', home_score:0, away_score:2, venue:'People\'s Stadium', date:'Mar 11', time:'7:30 PM',
+      home:'Yo Creek Ballers', away:'Orange Walk United' }
+  ],
+  tournaments: [
+    { id:1, name:'Orange Walk Premier League 2026', division:'Division 1', age_group:'Senior', type:'league', status:'ongoing', teams_count:8, matches_played:28, matches_count:56, start_date:'Jan 10', end_date:'Apr 20', venue_location:'Orange Walk District', organizer:'OW Football Assoc.' },
+    { id:2, name:'Belize Premier Football League 2026', division:'Division 1', age_group:'Senior', type:'league', status:'ongoing', teams_count:10, matches_played:54, matches_count:90, start_date:'Jan 5', end_date:'May 10', venue_location:'National', organizer:'Football Federation of Belize' },
+    { id:3, name:'OW District Cup 2026', division:'Division 2', age_group:'Senior', type:'knockout', status:'ongoing', teams_count:8, matches_played:6, matches_count:7, start_date:'Feb 1', end_date:'Apr 5', venue_location:'Orange Walk & Corozal', organizer:'OW Football Assoc.' },
+    { id:4, name:'U16 Youth Cup 2026', division:'Youth', age_group:'U16', type:'knockout', status:'ongoing', teams_count:8, matches_played:4, matches_count:7, start_date:'Mar 1', end_date:'Apr 15', venue_location:'Orange Walk District', organizer:'OW Youth Sports' },
+    { id:5, name:'Northern Invitational 2025', division:'Division 1', age_group:'Senior', type:'league', status:'completed', teams_count:6, matches_played:30, matches_count:30, start_date:'Aug 1', end_date:'Nov 30', venue_location:'Northern Districts', organizer:'FFB North' },
+    { id:6, name:'Christmas Classic 2025', division:'Open', age_group:'Senior', type:'knockout', status:'completed', teams_count:16, matches_played:15, matches_count:15, start_date:'Dec 20', end_date:'Dec 28', venue_location:'Orange Walk', organizer:'OW Municipality' }
+  ],
+  standings: {
+    1: [
+      {team_name:'Corozal FC',      code:'COR', village_city:'Corozal',     group_label:'A', played:7, won:6, drawn:1, lost:0, goals_for:18, goals_against:5,  goal_difference:13, points:19},
+      {team_name:'Orange Walk Utd', code:'OWU', village_city:'Orange Walk', group_label:'A', played:7, won:4, drawn:2, lost:1, goals_for:12, goals_against:7,  goal_difference:5,  points:14},
+      {team_name:'Guinea Grass FC', code:'GGF', village_city:'Guinea Grass',group_label:'A', played:7, won:3, drawn:1, lost:3, goals_for:9,  goals_against:10, goal_difference:-1, points:10},
+      {team_name:'San Estevan FC',  code:'SEF', village_city:'San Estevan', group_label:'A', played:7, won:2, drawn:1, lost:4, goals_for:7,  goals_against:14, goal_difference:-7, points:7},
+      {team_name:'San Jose FC',     code:'SJF', village_city:'San Jose',    group_label:'B', played:7, won:5, drawn:0, lost:2, goals_for:15, goals_against:8,  goal_difference:7,  points:15},
+      {team_name:'Yo Creek Ballers',code:'YCB', village_city:'Yo Creek',    group_label:'B', played:7, won:4, drawn:1, lost:2, goals_for:11, goals_against:9,  goal_difference:2,  points:13},
+      {team_name:'Douglas FC',      code:'DFC', village_city:'Douglas',     group_label:'B', played:7, won:1, drawn:2, lost:4, goals_for:6,  goals_against:12, goal_difference:-6, points:5},
+      {team_name:'Shipyard United', code:'SHU', village_city:'Shipyard',    group_label:'B', played:7, won:0, drawn:1, lost:6, goals_for:3,  goals_against:16, goal_difference:-13,points:1}
+    ]
+  },
+  bracket: {
+    3: [
+      { label:'QUARTERFINALS', matches:[
+        { home:'Corozal FC',    home_score:2, away:'Douglas FC',       away_score:0, winner:'home', status:'confirmed' },
+        { home:'San Jose FC',   home_score:1, away:'Yo Creek Ballers', away_score:1, winner:null,   status:'live', home_score_pen:4, away_score_pen:3 },
+        { home:'OW United',     home_score:3, away:'Shipyard Utd',     away_score:1, winner:'home', status:'confirmed' },
+        { home:'Guinea Grass',  home_score:null,away:'San Estevan',    away_score:null,winner:null, status:'scheduled' }
+      ]},
+      { label:'SEMIFINALS', matches:[
+        { home:'Corozal FC',  home_score:null, away:'San Jose FC',   away_score:null, winner:null, status:'scheduled' },
+        { home:'OW United',   home_score:null, away:'TBD',           away_score:null, winner:null, status:'scheduled' }
+      ]},
+      { label:'FINAL', matches:[
+        { home:'TBD', home_score:null, away:'TBD', away_score:null, winner:null, status:'scheduled' }
+      ]},
+      { label:'CHAMPION', matches:[
+        { champion:true }
+      ]}
+    ]
+  },
+  teams: [
+    { id:1, team_name:'Corozal FC', code:'COR', village_city:'Corozal Town', division:'Division 1', coach_name:'Marco Aldana', played:14, won:11, drawn:2, players:[
+      {full_name:'Kevin Muñoz',      jersey_number:1,  position:'GK'},
+      {full_name:'Diego Requena',    jersey_number:3,  position:'DF'},
+      {full_name:'Carlos Tzib',      jersey_number:5,  position:'DF'},
+      {full_name:'Javier Mencias',   jersey_number:6,  position:'DF'},
+      {full_name:'Luis Ek',          jersey_number:8,  position:'MF'},
+      {full_name:'Bryan Choc',       jersey_number:10, position:'MF'},
+      {full_name:'Omar Avilez',      jersey_number:11, position:'FW'},
+      {full_name:'Wilmer Coc',       jersey_number:9,  position:'FW'},
+    ]},
+    { id:2, team_name:'Orange Walk United', code:'OWU', village_city:'Orange Walk Town', division:'Division 1', coach_name:'Ernesto Mag', played:14, won:8, drawn:3, players:[
+      {full_name:'Anthony Baptist',  jersey_number:1,  position:'GK'},
+      {full_name:'Joel Alamilla',    jersey_number:4,  position:'DF'},
+      {full_name:'Ricardo Chan',     jersey_number:7,  position:'MF'},
+      {full_name:'Elmer Guerrero',   jersey_number:10, position:'MF'},
+      {full_name:'Marvin Tun',       jersey_number:9,  position:'FW'},
+      {full_name:'Elvis Reyes',      jersey_number:11, position:'FW'},
+    ]},
+    { id:3, team_name:'Belmopan Bandits', code:'BAN', village_city:'Belmopan', division:'Division 1', coach_name:'Lionel Retreat', played:12, won:9, drawn:2, players:[
+      {full_name:'Elroy Smith',      jersey_number:1,  position:'GK'},
+      {full_name:'Deon McCaulay',    jersey_number:10, position:'FW'},
+      {full_name:'Harrison Roches',  jersey_number:7,  position:'MF'},
+      {full_name:'Ian Gaynair',      jersey_number:9,  position:'FW'},
+      {full_name:'Marcos Sanchez',   jersey_number:5,  position:'DF'},
+    ]},
+    { id:4, team_name:'Altitude FC', code:'ALT', village_city:'San Ignacio', division:'Division 1', coach_name:'Pedro Umul', played:12, won:5, drawn:4, players:[
+      {full_name:'Gilroy Thurton',   jersey_number:1,  position:'GK'},
+      {full_name:'Brandon Tillett',  jersey_number:8,  position:'MF'},
+      {full_name:'Lennox Castillo',  jersey_number:11, position:'FW'},
+      {full_name:'Dale Pelayo',      jersey_number:4,  position:'DF'},
+    ]},
+    { id:5, team_name:'Verdes FC', code:'VER', village_city:'Benque Viejo', division:'Division 1', coach_name:'Rodrigo Orellano', played:12, won:7, drawn:3, players:[
+      {full_name:'Woodrow West',     jersey_number:1,  position:'GK'},
+      {full_name:'Nana Mensah',      jersey_number:10, position:'FW'},
+      {full_name:'Evan Mariano',     jersey_number:6,  position:'MF'},
+      {full_name:'Christopher Avila',jersey_number:3,  position:'DF'},
+    ]},
+    { id:6, team_name:'Yo Creek Ballers', code:'YCB', village_city:'Yo Creek Village', division:'Division 2', coach_name:'Hipolito Cano', played:7, won:4, drawn:1, players:[
+      {full_name:'Santos Cano',      jersey_number:1,  position:'GK'},
+      {full_name:'Felix Moh',        jersey_number:9,  position:'FW'},
+      {full_name:'Rene Avilez',      jersey_number:7,  position:'MF'},
+      {full_name:'Gilberto Murillo', jersey_number:5,  position:'DF'},
+    ]},
+    { id:7, team_name:'Guinea Grass FC', code:'GGF', village_city:'Guinea Grass Village', division:'Division 1', coach_name:'Armando Novelo', played:7, won:3, drawn:1, players:[
+      {full_name:'Junior Palma',     jersey_number:1,  position:'GK'},
+      {full_name:'Elvin Camal',      jersey_number:11, position:'FW'},
+      {full_name:'Nelson Patt',      jersey_number:8,  position:'MF'},
+    ]},
+    { id:8, team_name:'San Estevan FC', code:'SEF', village_city:'San Estevan Village', division:'Division 2', coach_name:'Rogelio Teck', played:7, won:2, drawn:1, players:[
+      {full_name:'Marcelino Chan',   jersey_number:1,  position:'GK'},
+      {full_name:'Aldrin Morales',   jersey_number:10, position:'FW'},
+      {full_name:'Rolando Cob',      jersey_number:6,  position:'MF'},
+    ]}
+  ],
+  matchDetails: {
+    1: { id:1, tournament:'Orange Walk Premier League', round:'Week 8', status:'live', minute:67, home_score:2, away_score:1, venue:"People's Stadium, O.W.", date:'Mar 19, 2026', time:'7:30 PM',
+      home:{name:'Corozal FC',        code:'COR', city:'Corozal Town'},
+      away:{name:'Orange Walk United', code:'OWU', city:'Orange Walk'},
+      events:[
+        {minute:12, event_type:'goal',        player_name:'Omar Avilez',     description:'Right foot shot, bottom left corner',  team_name:'Corozal FC'},
+        {minute:28, event_type:'yellow_card', player_name:'Joel Alamilla',   description:'Dangerous foul on midfield',           team_name:'OW United'},
+        {minute:39, event_type:'goal',        player_name:'Marvin Tun',      description:'Header from corner kick',              team_name:'OW United'},
+        {minute:54, event_type:'yellow_card', player_name:'Carlos Tzib',     description:'Time wasting',                         team_name:'Corozal FC'},
+        {minute:61, event_type:'goal',        player_name:'Wilmer Coc',      description:'Low drive from outside the box ⚽🔥',   team_name:'Corozal FC'},
+        {minute:66, event_type:'red_card',    player_name:'Elvis Reyes',     description:'Second yellow — reckless tackle',      team_name:'OW United'},
+      ]
+    },
+    2: { id:2, tournament:'Belize Premier Football League', round:'Matchday 12', status:'live', minute:34, home_score:0, away_score:0, venue:'FFB Stadium, Belmopan', date:'Mar 19, 2026', time:'9:00 PM',
+      home:{name:'Belmopan Bandits', code:'BAN', city:'Belmopan'},
+      away:{name:'Altitude FC',      code:'ALT', city:'San Ignacio'},
+      events:[
+        {minute:8,  event_type:'yellow_card', player_name:'Dale Pelayo',     description:'Foul on Deon McCaulay',                team_name:'Altitude FC'},
+        {minute:22, event_type:'yellow_card', player_name:'Harrison Roches', description:'Simulation',                           team_name:'Belmopan Bandits'},
+      ]
+    },
+    3: { id:3, tournament:'OW District Cup', round:'Semifinal', status:'scheduled', home_score:null, away_score:null, venue:'Laguna Park, Corozal', date:'Mar 22, 2026', time:'4:00 PM',
+      home:{name:'San Jose FC',     code:'SJF', city:'San Jose Village'},
+      away:{name:'Yo Creek Ballers', code:'YCB', city:'Yo Creek'},
+      events:[]
+    },
+    4: { id:4, tournament:'Belize Premier Football League', round:'Matchday 13', status:'scheduled', home_score:null, away_score:null, venue:'Marion Jones Stadium', date:'Mar 23, 2026', time:'7:00 PM',
+      home:{name:'Verdes FC',          code:'VER', city:'Benque Viejo'},
+      away:{name:'Belmopan Bandits',   code:'BAN', city:'Belmopan'},
+      events:[]
+    },
+    7: { id:7, tournament:'Orange Walk Premier League', round:'Week 7', status:'confirmed', home_score:3, away_score:1, venue:"People's Stadium", date:'Mar 15, 2026', time:'7:30 PM',
+      home:{name:'Corozal FC',      code:'COR', city:'Corozal Town'},
+      away:{name:'Guinea Grass FC', code:'GGF', city:'Guinea Grass'},
+      events:[
+        {minute:9,  event_type:'goal',        player_name:'Omar Avilez',  description:'Tap-in from close range',       team_name:'Corozal FC'},
+        {minute:33, event_type:'goal',        player_name:'Elvin Camal',  description:'Long range effort',             team_name:'Guinea Grass FC'},
+        {minute:58, event_type:'goal',        player_name:'Wilmer Coc',   description:'Penalty kick — VAR review',    team_name:'Corozal FC'},
+        {minute:82, event_type:'goal',        player_name:'Bryan Choc',   description:'Counter attack finish',         team_name:'Corozal FC'},
+      ]
+    },
+    8: { id:8, tournament:'BPFL', round:'Matchday 11', status:'confirmed', home_score:2, away_score:2, venue:'FFB Stadium', date:'Mar 14, 2026', time:'9:00 PM',
+      home:{name:'Altitude FC', code:'ALT', city:'San Ignacio'},
+      away:{name:'Verdes FC',   code:'VER', city:'Benque Viejo'},
+      events:[
+        {minute:15, event_type:'goal', player_name:'Lennox Castillo', description:'Brilliant solo goal', team_name:'Altitude FC'},
+        {minute:37, event_type:'goal', player_name:'Nana Mensah',     description:'Header — corner',     team_name:'Verdes FC'},
+        {minute:60, event_type:'goal', player_name:'Evan Mariano',    description:'Free kick — top bin', team_name:'Verdes FC'},
+        {minute:89, event_type:'goal', player_name:'Brandon Tillett', description:'Injury time equaliser!', team_name:'Altitude FC'},
+      ]
+    }
+  }
+};
+
 /* ── SIMULATED LIVE TICKER: minute increments every 30s ── */
 function startLiveSimulation() {
   setInterval(() => {
@@ -13,8 +196,7 @@ function startLiveSimulation() {
     const lmlEl = document.getElementById('liveMatchList');
     if (lmlEl && APP.liveMatches.length) {
       lmlEl.innerHTML = APP.liveMatches.map(matchCardHTML).join('');
-      requestAnimationFrame(bootFlameCanvases);
-    }
+          }
   }, 30000);
 }
 
@@ -97,16 +279,12 @@ function centerHTML(m){
   if(hasScore){
     const isLive = m.status === 'live';
     if(isLive){
-      const scoreText = `${m.home_score} – ${m.away_score}`;
       return`<div class="mc-center">
-        <div class="flame-score-wrap">
-          <canvas class="flame-canvas" data-score="${scoreText}" width="160" height="120" aria-hidden="true"></canvas>
-          <div class="flame-score-aria" aria-label="${scoreText}"></div>
-        </div>
-        <div class="mc-live-min">⏱ ${m.minute||'...'}′</div>
+        <div class="mc-score live">${m.home_score}<span style="opacity:.3;margin:0 4px">–</span>${m.away_score}</div>
+        <div class="mc-live-min"><svg style="width:11px;height:11px;vertical-align:middle;margin-right:2px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>${m.minute||'...'}′</div>
       </div>`;
     }
-    return`<div class="mc-center"><div class="mc-score">${m.home_score}<span style="opacity:.3;margin:0 2px">–</span>${m.away_score}</div></div>`;
+    return`<div class="mc-center"><div class="mc-score">${m.home_score}<span style="opacity:.3;margin:0 4px">–</span>${m.away_score}</div></div>`;
   }
   return`<div class="mc-center"><div class="vs-container"><div class="vs-word">VS</div><div class="vs-kickoff"><div class="vs-kickoff-date">${m.date||''}</div><div class="vs-kickoff-time">${m.time||''}</div></div></div></div>`;
 }
@@ -114,237 +292,7 @@ function centerHTML(m){
 // ══════════════════════════════════════════════════════════
 //  FLAME ENGINE v4 — fires emit from digit outline pixels
 // ══════════════════════════════════════════════════════════
-function bootFlameCanvases(){
-  document.querySelectorAll('.flame-canvas').forEach(cvs=>{
-    if(cvs._flameRunning) return;
-    cvs._flameRunning = true;
-
-    const W = cvs.width, H = cvs.height;
-    const score = cvs.dataset.score || '0 – 0';
-    const ctx = cvs.getContext('2d');
-
-    // ── 1. SAMPLE DIGIT OUTLINE POINTS ───────────────────
-    // Use an offscreen canvas to render the text, then find edge pixels
-    const off = document.createElement('canvas');
-    off.width = W; off.height = H;
-    const octx = off.getContext('2d');
-
-    const FONT_SIZE = 52;
-    octx.clearRect(0, 0, W, H);
-    octx.fillStyle = '#fff';
-    octx.font = `${FONT_SIZE}px 'Black Han Sans', sans-serif`;
-    octx.textAlign = 'center';
-    octx.textBaseline = 'middle';
-    octx.fillText(score, W/2, H * 0.62);  // sit in lower half so flames go up
-
-    // Find all edge pixels (non-transparent pixel adjacent to transparent)
-    const idata = octx.getImageData(0, 0, W, H);
-    const px = idata.data;
-    const edgePoints = [];
-    const stride = 4;
-    for(let y = 1; y < H-1; y++){
-      for(let x = 1; x < W-1; x++){
-        const i = (y*W + x) * stride;
-        if(px[i+3] > 60){  // opaque pixel
-          // check 4-neighbors for transparency
-          const n = (( (y-1)*W + x  ) * stride)+3;
-          const s = (( (y+1)*W + x  ) * stride)+3;
-          const ww= (( y    *W + x-1) * stride)+3;
-          const e = (( y    *W + x+1) * stride)+3;
-          if(px[n]<60 || px[s]<60 || px[ww]<60 || px[e]<60){
-            edgePoints.push({x, y});
-          }
-        }
-      }
-    }
-
-    // ── 2. PARTICLE POOL ──────────────────────────────────
-    const particles = [];
-    let frameN = 0;
-
-    function spawnFromEdge(){
-      // Pick 14–18 random edge points each frame and spawn fire there
-      const count = 14 + Math.floor(Math.random()*6);
-      for(let i=0;i<count;i++){
-        if(!edgePoints.length) break;
-        const pt = edgePoints[Math.floor(Math.random()*edgePoints.length)];
-
-        const layer = Math.random();
-        let size, vy, col, life, vx;
-
-        if(layer < 0.35){
-          // CORE — red-orange base
-          size = 6 + Math.random()*8;
-          vy   = -(1.2 + Math.random()*2.0);
-          vx   = (Math.random()-0.5)*1.4;
-          life = 50 + Math.random()*35;
-          col  = ['#ff1800','#ff2e00','#ff4400','#cc1000'][Math.floor(Math.random()*4)];
-        } else if(layer < 0.72){
-          // MID — orange tongues
-          size = 4 + Math.random()*6;
-          vy   = -(2.0 + Math.random()*2.8);
-          vx   = (Math.random()-0.5)*1.1;
-          life = 35 + Math.random()*25;
-          col  = ['#ff7700','#ff9500','#ffaa00','#ffbe00'][Math.floor(Math.random()*4)];
-        } else {
-          // TIPS — yellow-white wisps
-          size = 2.5 + Math.random()*4;
-          vy   = -(3.2 + Math.random()*3.5);
-          vx   = (Math.random()-0.5)*0.9;
-          life = 22 + Math.random()*18;
-          col  = ['#ffe033','#ffee66','#fffa99','#ffffff'][Math.floor(Math.random()*4)];
-        }
-
-        particles.push({
-          x: pt.x + (Math.random()-0.5)*2,
-          y: pt.y + (Math.random()-0.5)*2,
-          vx, vy, size, life, maxLife: life, col,
-          wobble: Math.random()*Math.PI*2,
-          wFreq:  0.07+Math.random()*0.09,
-          wAmp:   0.03+Math.random()*0.07,
-        });
-      }
-    }
-
-    // Hex → rgb cache
-    const rgbCache = {};
-    function rgb(hex){
-      if(rgbCache[hex]) return rgbCache[hex];
-      const r=parseInt(hex.slice(1,3),16);
-      const g=parseInt(hex.slice(3,5),16);
-      const b=parseInt(hex.slice(5,7),16);
-      return (rgbCache[hex]=[r,g,b]);
-    }
-
-    function drawParticle(p){
-      const t = p.life/p.maxLife;
-      const r = p.size*(0.5+t*0.5);
-      // Fade: quick ramp up, hold, slow fade out
-      const a = t<0.15 ? t/0.15 : t<0.6 ? 1 : Math.pow((t-0.6)/0.4, 0.4);
-      const [rr,gg,bb] = rgb(p.col);
-      const g = ctx.createRadialGradient(p.x,p.y,0, p.x,p.y,r);
-      g.addColorStop(0,   `rgba(${rr},${gg},${bb},${(a*.98).toFixed(3)})`);
-      g.addColorStop(0.35,`rgba(${rr},${gg},${bb},${(a*.72).toFixed(3)})`);
-      g.addColorStop(0.7, `rgba(${rr},${gg},${bb},${(a*.28).toFixed(3)})`);
-      g.addColorStop(1,   `rgba(${rr},${gg},${bb},0)`);
-      ctx.globalCompositeOperation = 'lighter';
-      ctx.fillStyle = g;
-      ctx.beginPath();
-      ctx.ellipse(p.x, p.y, r*0.7, r*1.25, 0, 0, Math.PI*2);
-      ctx.fill();
-    }
-
-    function step(){
-      if(!cvs._flameRunning) return;
-
-      ctx.clearRect(0,0,W,H);
-
-      // ── LAYER 1 (bottom): Thick black outline behind fire — creates contrast halo ──
-      ctx.save();
-      ctx.globalCompositeOperation = 'source-over';
-      ctx.strokeStyle = 'rgba(0,0,0,0.95)';
-      ctx.lineWidth   = 12;
-      ctx.lineJoin    = 'round';
-      ctx.font        = `${FONT_SIZE}px 'Black Han Sans', sans-serif`;
-      ctx.textAlign   = 'center';
-      ctx.textBaseline= 'middle';
-      ctx.strokeText(score, W/2, H*0.62);
-      ctx.restore();
-
-      // ── LAYER 2: Solid bright white fill — maximum legibility ──
-      ctx.save();
-      ctx.globalCompositeOperation = 'source-over';
-      ctx.fillStyle   = '#ffffff';
-      ctx.font        = `${FONT_SIZE}px 'Black Han Sans', sans-serif`;
-      ctx.textAlign   = 'center';
-      ctx.textBaseline= 'middle';
-      ctx.fillText(score, W/2, H*0.62);
-      ctx.restore();
-
-      // ── Fire particles spawn + animate OVER the white numbers ──
-      spawnFromEdge();
-
-      for(let i=particles.length-1;i>=0;i--){
-        const p=particles[i];
-        p.wobble += p.wFreq;
-        p.vx += Math.sin(p.wobble)*p.wAmp + (Math.random()-0.5)*0.06;
-        p.vx *= 0.965;
-        p.vy *= 0.992;
-        p.x  += p.vx;
-        p.y  += p.vy;
-        p.size *= 0.993;
-        p.life--;
-        if(p.life<=0 || p.y<-p.size*3){ particles.splice(i,1); continue; }
-        drawParticle(p);
-      }
-
-      // ── LAYER 3 (top): Re-draw crisp number above the fire so it never disappears ──
-      // Thin dark outline for edge crispness
-      ctx.save();
-      ctx.globalCompositeOperation = 'source-over';
-      ctx.strokeStyle = 'rgba(0,0,0,0.8)';
-      ctx.lineWidth   = 6;
-      ctx.lineJoin    = 'round';
-      ctx.font        = `${FONT_SIZE}px 'Black Han Sans', sans-serif`;
-      ctx.textAlign   = 'center';
-      ctx.textBaseline= 'middle';
-      ctx.strokeText(score, W/2, H*0.62);
-      ctx.restore();
-
-      // Bright white fill — always readable, punches through fire
-      ctx.save();
-      ctx.globalCompositeOperation = 'source-over';
-      ctx.fillStyle   = '#ffffff';
-      ctx.shadowColor = 'rgba(255,255,255,0.9)';
-      ctx.shadowBlur  = 10;
-      ctx.font        = `${FONT_SIZE}px 'Black Han Sans', sans-serif`;
-      ctx.textAlign   = 'center';
-      ctx.textBaseline= 'middle';
-      ctx.fillText(score, W/2, H*0.62);
-      ctx.restore();
-
-      // Hot amber heat tint — looks scorching but stays transparent
-      ctx.save();
-      ctx.globalCompositeOperation = 'source-over';
-      ctx.globalAlpha = 0.22;
-      ctx.fillStyle   = '#ffcc00';
-      ctx.shadowColor = '#ff8800';
-      ctx.shadowBlur  = 18;
-      ctx.font        = `${FONT_SIZE}px 'Black Han Sans', sans-serif`;
-      ctx.textAlign   = 'center';
-      ctx.textBaseline= 'middle';
-      ctx.fillText(score, W/2, H*0.62);
-      ctx.restore();
-
-      frameN++;
-      requestAnimationFrame(step);
-    }
-
-    // Preload font then start
-    document.fonts.load(`${FONT_SIZE}px 'Black Han Sans'`).then(()=>{
-      // Re-sample edge points after font loads
-      octx.clearRect(0,0,W,H);
-      octx.fillStyle='#fff';
-      octx.font=`${FONT_SIZE}px 'Black Han Sans', sans-serif`;
-      octx.textAlign='center'; octx.textBaseline='middle';
-      octx.fillText(score, W/2, H*0.62);
-      const id2=octx.getImageData(0,0,W,H); const p2=id2.data;
-      edgePoints.length=0;
-      for(let y=1;y<H-1;y++){
-        for(let x=1;x<W-1;x++){
-          const i=(y*W+x)*4;
-          if(p2[i+3]>60){
-            const n=((y-1)*W+x)*4+3, s=((y+1)*W+x)*4+3,
-                  wl=(y*W+x-1)*4+3,  e=(y*W+x+1)*4+3;
-            if(p2[n]<60||p2[s]<60||p2[wl]<60||p2[e]<60)
-              edgePoints.push({x,y});
-          }
-        }
-      }
-      step();
-    }).catch(()=>step());
-  });
-}
+// flame canvas removed — replaced with CSS score display
 
 async function buildHome(){
   document.getElementById('liveCount').textContent='Loading…';
@@ -353,7 +301,6 @@ async function buildHome(){
   const[live,upcoming,recent]=await Promise.all([fetchLive(),fetchUpcoming(),fetchRecent()]);
   document.getElementById('liveCount').textContent=live.length+' match'+(live.length!==1?'es':'');
   document.getElementById('liveMatchList').innerHTML=live.length?live.map(matchCardHTML).join(''):`<div class="empty"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></svg></div><p>No live matches right now</p></div>`;
-  if(live.length) requestAnimationFrame(bootFlameCanvases);
   document.getElementById('upcomingMatchList').innerHTML=upcoming.length?upcoming.map(matchCardHTML).join(''):`<div class="empty"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg></div><p>No upcoming matches scheduled</p></div>`;
   document.getElementById('recentResultsSidebar').innerHTML=recent.length?recent.map(r=>`<div class="qr" onclick="openMatchDetail(${r.id})"><div class="qr-teams">${r.home||r.home_team}<br><small style="color:var(--off)">${r.away||r.away_team}</small></div><div class="qr-score">${r.home_score}–${r.away_score}</div></div>`).join(''):`<div style="padding:16px;text-align:center;font-size:12px;color:var(--off)">No recent results</div>`;
   // Mobile recent results — same data as sidebar but as full match cards
@@ -519,109 +466,7 @@ navigate = async function(page, btn) {
 /* ══════════════════════════════════════
    BACKGROUND PARTICLE STAR FIELD
 ══════════════════════════════════════ */
-function initBgParticles(){
-  const cvs = document.getElementById('bgCanvas');
-  if(!cvs) return;
-  const ctx = cvs.getContext('2d');
-  let W, H;
-
-  function resize(){
-    W = cvs.width  = window.innerWidth;
-    H = cvs.height = window.innerHeight;
-  }
-  resize();
-  window.addEventListener('resize', resize);
-
-  // Three types of particles
-  const stars=[], orbs=[], streaks=[];
-
-  // Static twinkling stars
-  for(let i=0;i<120;i++){
-    stars.push({
-      x:Math.random()*W, y:Math.random()*H,
-      r:0.5+Math.random()*1.5,
-      a:Math.random(), da:0.005+Math.random()*0.015,
-      phase:Math.random()*Math.PI*2
-    });
-  }
-
-  // Slow drifting orbs
-  for(let i=0;i<18;i++){
-    orbs.push({
-      x:Math.random()*W, y:Math.random()*H,
-      r:40+Math.random()*80,
-      vx:(Math.random()-0.5)*0.15,
-      vy:(Math.random()-0.5)*0.12,
-      a:0.03+Math.random()*0.06,
-      hue:Math.random()>0.5?210:190,
-      phase:Math.random()*Math.PI*2,
-      pSpeed:0.008+Math.random()*0.012
-    });
-  }
-
-  // Occasional shooting streaks
-  function spawnStreak(){
-    streaks.push({
-      x:Math.random()*W*0.8, y:Math.random()*H*0.5,
-      len:60+Math.random()*100,
-      angle:0.3+Math.random()*0.4,
-      speed:8+Math.random()*6,
-      life:1, maxLife:1,
-      a:0.6+Math.random()*0.4
-    });
-    setTimeout(spawnStreak, 2000+Math.random()*5000);
-  }
-  setTimeout(spawnStreak, 1000);
-
-  let t=0;
-  function frame(){
-    ctx.clearRect(0,0,W,H);
-    t+=0.016;
-
-    // Draw orbs
-    orbs.forEach(o=>{
-      o.phase+=o.pSpeed;
-      o.x+=o.vx; o.y+=o.vy;
-      if(o.x<-o.r)o.x=W+o.r; if(o.x>W+o.r)o.x=-o.r;
-      if(o.y<-o.r)o.y=H+o.r; if(o.y>H+o.r)o.y=-o.r;
-      const pulse=o.a*(0.7+0.3*Math.sin(o.phase));
-      const g=ctx.createRadialGradient(o.x,o.y,0,o.x,o.y,o.r);
-      g.addColorStop(0,`hsla(${o.hue},100%,65%,${pulse})`);
-      g.addColorStop(1,`hsla(${o.hue},100%,50%,0)`);
-      ctx.fillStyle=g;
-      ctx.beginPath();ctx.arc(o.x,o.y,o.r,0,Math.PI*2);ctx.fill();
-    });
-
-    // Draw stars
-    stars.forEach(s=>{
-      s.phase+=s.da;
-      const a=0.2+0.8*Math.abs(Math.sin(s.phase));
-      ctx.fillStyle=`rgba(180,220,255,${(a*0.7).toFixed(3)})`;
-      ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fill();
-    });
-
-    // Draw streaks
-    for(let i=streaks.length-1;i>=0;i--){
-      const s=streaks[i];
-      s.x+=Math.cos(s.angle)*s.speed;
-      s.y+=Math.sin(s.angle)*s.speed;
-      s.life-=0.025;
-      if(s.life<=0){streaks.splice(i,1);continue;}
-      const a=s.life*s.a;
-      const grd=ctx.createLinearGradient(s.x,s.y,s.x-Math.cos(s.angle)*s.len,s.y-Math.sin(s.angle)*s.len);
-      grd.addColorStop(0,`rgba(0,212,255,${a.toFixed(3)})`);
-      grd.addColorStop(1,'rgba(0,212,255,0)');
-      ctx.strokeStyle=grd;ctx.lineWidth=1.5;
-      ctx.beginPath();
-      ctx.moveTo(s.x,s.y);
-      ctx.lineTo(s.x-Math.cos(s.angle)*s.len,s.y-Math.sin(s.angle)*s.len);
-      ctx.stroke();
-    }
-
-    requestAnimationFrame(frame);
-  }
-  frame();
-}
+function initBgParticles(){}
 
 /* ═══════════════════════ ICON SYSTEM ═══════════════════════ */
 const ICONS = {
@@ -647,13 +492,7 @@ const ICONS = {
 };
 
 document.addEventListener('DOMContentLoaded',()=>{ buildHome(); startLiveSimulation(); });
-window.addEventListener('resize', ()=>{
-  const cvs = document.getElementById('clashCanvas');
-  if(cvs && document.getElementById('clashOverlay').style.display !== 'none'){
-    cvs.width = window.innerWidth;
-    cvs.height = window.innerHeight;
-  }
-});
+
 
 /* ═══════════════════════════════════════════════════
    CLASH ENGINE v3 — fire trails + canvas charge + impact
@@ -718,281 +557,7 @@ async function _doOpenMatchDetail(id) {
   }
 }
 
-// ─── CLASH ENGINE ───────────────────────────────────────────
-function _runClash(cfg) {
-  const ov  = document.getElementById('clashOverlay');
-  const cvs = document.getElementById('clashCanvas');
-  const ctx = cvs.getContext('2d');
-
-  // Resize canvas to viewport
-  cvs.width  = window.innerWidth;
-  cvs.height = window.innerHeight;
-  const W = cvs.width, H = cvs.height;
-  const CX = W/2, CY = H/2;
-
-  // Populate DOM labels
-  document.getElementById('c_homeName').textContent = cfg.homeTeam;
-  document.getElementById('c_awayName').textContent = cfg.awayTeam;
-  document.getElementById('c_homeCode').textContent = cfg.homeCode;
-  document.getElementById('c_awayCode').textContent = cfg.awayCode;
-  document.getElementById('c_homeAv').className = 'c-av ' + cfg.homeKit;
-  document.getElementById('c_awayAv').className = 'c-av ' + cfg.awayKit;
-
-  const scoreEl = document.getElementById('c_score');
-  if (cfg.status !== 'scheduled') {
-    scoreEl.textContent = cfg.homeScore + ' – ' + cfg.awayScore;
-    scoreEl.style.opacity = '0';
-  } else {
-    scoreEl.textContent = '';
-    scoreEl.style.opacity = '0';
-  }
-  const liveEl = document.getElementById('c_live');
-  liveEl.style.opacity = '0';
-  if (cfg.status === 'live') {
-    liveEl.innerHTML = `<span class="c-live-dot"></span> LIVE &nbsp; ${cfg.minute||''}′`;
-  }
-
-  // Reset VS
-  const vsEl = document.getElementById('c_vs');
-  vsEl.style.opacity = '0';
-  vsEl.style.transform = 'scale(0) rotate(-20deg)';
-
-  // Show overlay
-  ov.style.display = 'flex';
-  ov.style.opacity = '0';
-
-  // Particle pools
-  let particles = [], sparks = [], shockwaves = [], fireTrails = [];
-  let rafId = null, startTime = null;
-  let phase = 0; // 0=charge, 1=impact, 2=reveal, 3=done
-
-  // Home badge screen position (left side, charging right)
-  // Away badge screen position (right side, charging left)
-  // We animate them on canvas too for the fire trail effect
-  const homeEl = document.getElementById('c_homeAv');
-  const awayEl = document.getElementById('c_awayAv');
-
-  function getBadgePos(el) {
-    const r = el.getBoundingClientRect();
-    return { x: r.left + r.width/2, y: r.top + r.height/2 };
-  }
-
-  // ── helpers ──
-  function lerp(a,b,t){ return a+(b-a)*t; }
-  function easeOut(t){ return 1-Math.pow(1-t,3); }
-  function easeIn(t){ return t*t*t; }
-
-  function spawnBurst(x, y, count, colors, spd, life) {
-    for (let i=0;i<count;i++) {
-      const a = Math.random()*Math.PI*2;
-      const s = spd*(0.3+Math.random()*0.9);
-      particles.push({ x,y, vx:Math.cos(a)*s, vy:Math.sin(a)*s - Math.random()*spd*0.4,
-        life: life*(0.5+Math.random()*0.6), maxLife:life,
-        size: 1.5+Math.random()*5, color:colors[Math.floor(Math.random()*colors.length)],
-        gravity: 0.08+Math.random()*0.12 });
-    }
-  }
-  function spawnSparks(x, y, count) {
-    for (let i=0;i<count;i++) {
-      const a = -Math.PI/2 + (Math.random()-0.5)*Math.PI*1.6;
-      const s = 5+Math.random()*18;
-      sparks.push({ x,y, vx:Math.cos(a)*s, vy:Math.sin(a)*s,
-        life:35+Math.random()*35, maxLife:70,
-        color:['#00d4ff','#fff','#ffcc00','#ff6a00','#4d9fff'][Math.floor(Math.random()*5)] });
-    }
-  }
-  function addShockwave(x,y){ shockwaves.push({x,y,r:0,maxR:Math.max(W,H)*0.75,alpha:1}); }
-
-  function shakeDom() {
-    ov.style.animation='none'; void ov.offsetWidth;
-    ov.style.animation='c-shake .5s cubic-bezier(.36,.07,.19,.97) both';
-  }
-
-  function lightPath(x1,y1,x2,y2,rough) {
-    const pts=[{x:x1,y:y1}];
-    for(let i=1;i<14;i++){
-      const t=i/14;
-      pts.push({x:x1+(x2-x1)*t+(Math.random()-.5)*rough*2, y:y1+(y2-y1)*t+(Math.random()-.5)*rough});
-    }
-    pts.push({x:x2,y:y2}); return pts;
-  }
-  function drawBolt(pts,w,color,alpha) {
-    ctx.save(); ctx.globalAlpha=alpha; ctx.strokeStyle=color;
-    ctx.lineWidth=w; ctx.shadowColor=color; ctx.shadowBlur=18; ctx.lineCap='round';
-    ctx.beginPath(); ctx.moveTo(pts[0].x,pts[0].y);
-    pts.forEach(p=>ctx.lineTo(p.x,p.y)); ctx.stroke(); ctx.restore();
-  }
-
-  // ── FIRE TRAIL particles for charge phase ──
-  function emitFire(x, y, dirX) {
-    for (let i=0;i<4;i++) {
-      const angle = Math.PI/2 + (Math.random()-0.5)*0.8;
-      const spd   = 1+Math.random()*3;
-      fireTrails.push({
-        x: x+(Math.random()-0.5)*20, y: y+(Math.random()-0.5)*20,
-        vx: Math.cos(angle)*spd - dirX*0.5,
-        vy: Math.sin(angle)*spd - 2 - Math.random()*2,
-        life:15+Math.random()*20, maxLife:35,
-        size:3+Math.random()*8,
-        color:['#ff6a00','#ff2d55','#ffcc00','#ff9500','#fff'][Math.floor(Math.random()*5)]
-      });
-    }
-  }
-
-  // ── MAIN TICK ──
-  function tick(ts) {
-    if (!startTime) startTime = ts;
-    const t = ts - startTime; // ms elapsed
-
-    ctx.clearRect(0,0,W,H);
-
-    // ── PHASE 0: CHARGE (0–700ms) ──
-    // CSS handles the DOM badges sliding in, canvas draws fire trails
-    if (phase === 0) {
-      // Emit fire from each badge position every frame
-      const hp = getBadgePos(homeEl);
-      const ap = getBadgePos(awayEl);
-      emitFire(hp.x, hp.y,  1);  // home moving right → fire goes left
-      emitFire(ap.x, ap.y, -1);  // away moving left  → fire goes right
-
-      // Also draw a faint trail line converging
-      if (t > 100) {
-        const progress = Math.min(1, (t-100)/500);
-        // energy buildup lines from edges to center
-        const alpha = easeOut(progress) * 0.3;
-        for (let i=0;i<3;i++) {
-          const offY = (Math.random()-0.5)*80;
-          const pts1 = lightPath(hp.x, hp.y, CX, CY+offY, 20*(1-progress));
-          drawBolt(pts1, 0.8, '#00d4ff', alpha);
-        }
-      }
-
-      if (t >= 700 && phase === 0) {
-        phase = 1;
-        // ── IMPACT ──
-        shakeDom();
-        spawnBurst(CX,CY, 200, ['#00d4ff','#fff','#4d9fff','#ffcc00','#ff6a00','#ff2d55'], 22, 100);
-        spawnSparks(CX, CY, 100);
-        addShockwave(CX,CY);
-        setTimeout(()=>addShockwave(CX,CY), 60);
-        setTimeout(()=>addShockwave(CX,CY), 150);
-        setTimeout(()=>addShockwave(CX,CY), 280);
-        setTimeout(()=>{ spawnBurst(CX,CY,80,['#ff2d55','#ffcc00','#00e87a','#fff'],14,70); spawnSparks(CX,CY,50); },100);
-        setTimeout(()=>{ spawnBurst(CX,CY,40,['#00d4ff','#4d9fff'],8,50); },250);
-
-        // Flash the whole screen white
-        ov.style.background='#fff';
-        setTimeout(()=>{ ov.style.background='#020916'; }, 80);
-      }
-    }
-
-    // ── PHASE 1: IMPACT AFTERMATH (700–1600ms) ──
-    if (phase >= 1 && t > 700 && t < 1600) {
-      const intensity = 1 - (t-700)/900;
-      const count = Math.floor(intensity * 5) + 1;
-      for (let b=0;b<count;b++) {
-        const offY = (Math.random()-0.5)*140;
-        const offX = (Math.random()-0.5)*40;
-        const pts  = lightPath(CX+offX-30, CY+offY, CX+offX+30, CY+offY, 70*(0.3+intensity));
-        drawBolt(pts, 2+intensity*3, '#fff', (0.3+intensity*0.7)*0.9);
-        drawBolt(pts, 1, '#00d4ff', 0.4+intensity*0.5);
-        // branch
-        if (Math.random() > 0.5) {
-          const mp = pts[Math.floor(pts.length/2)];
-          const bp = lightPath(mp.x,mp.y, CX+(Math.random()-0.5)*400, CY+(Math.random()-0.5)*220, 35);
-          drawBolt(bp, 0.8, '#4d9fff', intensity*0.4);
-        }
-      }
-    }
-
-    // ── PHASE 2: REVEAL (1600ms) ──
-    if (phase === 1 && t >= 1600) {
-      phase = 2;
-      // Animate VS in
-      vsEl.style.transition='opacity .25s, transform .35s cubic-bezier(.2,0,.2,1)';
-      vsEl.style.opacity='1'; vsEl.style.transform='scale(1) rotate(0deg)';
-      // Score
-      setTimeout(()=>{
-        scoreEl.style.transition='opacity .3s ease .1s, transform .3s ease .1s';
-        scoreEl.style.opacity='1'; scoreEl.style.transform='scale(1)';
-      }, 200);
-      // Live badge
-      if (cfg.status === 'live') {
-        setTimeout(()=>{
-          liveEl.style.transition='opacity .3s ease';
-          liveEl.style.opacity='1';
-        }, 450);
-      }
-      // Hint
-      setTimeout(()=>{
-        document.getElementById('c_hint').style.opacity='1';
-      }, 900);
-      // Idle sparkle + auto-close
-      setTimeout(()=>{ if(phase<3){ phase=3; _dismissClash(cfg.id); } }, 3000);
-    }
-
-    // ── IDLE SPARKLE after reveal ──
-    if (phase >= 2 && t > 1600 && Math.random() > 0.75) {
-      spawnBurst(CX+(Math.random()-0.5)*100, CY+(Math.random()-0.5)*60, 2, ['#00d4ff','#ffcc00','#fff'], 3, 25);
-    }
-
-    // ── DRAW FIRE TRAILS ──
-    for (let i=fireTrails.length-1; i>=0; i--) {
-      const f = fireTrails[i];
-      f.x+=f.vx; f.y+=f.vy; f.vy-=0.15; f.life--;
-      if(f.life<=0){fireTrails.splice(i,1);continue;}
-      const a=f.life/f.maxLife;
-      ctx.save(); ctx.globalAlpha=a*0.85;
-      ctx.fillStyle=f.color; ctx.shadowColor=f.color; ctx.shadowBlur=10;
-      ctx.beginPath(); ctx.arc(f.x,f.y,f.size*a,0,Math.PI*2); ctx.fill(); ctx.restore();
-    }
-
-    // ── SHOCKWAVES ──
-    for (let i=shockwaves.length-1; i>=0; i--) {
-      const sw=shockwaves[i];
-      sw.r+=32; sw.alpha=Math.max(0,1-sw.r/sw.maxR);
-      if(sw.alpha<=0){shockwaves.splice(i,1);continue;}
-      ctx.save();
-      ctx.strokeStyle=`rgba(0,212,255,${sw.alpha*0.7})`; ctx.lineWidth=3*sw.alpha;
-      ctx.shadowColor='#00d4ff'; ctx.shadowBlur=25;
-      ctx.beginPath(); ctx.arc(sw.x,sw.y,sw.r,0,Math.PI*2); ctx.stroke();
-      ctx.strokeStyle=`rgba(255,255,255,${sw.alpha*0.15})`; ctx.lineWidth=1;
-      ctx.beginPath(); ctx.arc(sw.x,sw.y,sw.r*0.65,0,Math.PI*2); ctx.stroke();
-      ctx.restore();
-    }
-
-    // ── SPARKS ──
-    for (let i=sparks.length-1; i>=0; i--) {
-      const s=sparks[i]; s.x+=s.vx; s.y+=s.vy; s.vy+=0.35; s.life--;
-      if(s.life<=0){sparks.splice(i,1);continue;}
-      const a=s.life/s.maxLife;
-      ctx.save(); ctx.globalAlpha=a; ctx.strokeStyle=s.color;
-      ctx.lineWidth=1.8; ctx.shadowColor=s.color; ctx.shadowBlur=10;
-      ctx.beginPath(); ctx.moveTo(s.x,s.y); ctx.lineTo(s.x-s.vx*1.8,s.y-s.vy*1.8);
-      ctx.stroke(); ctx.restore();
-    }
-
-    // ── PARTICLES ──
-    for (let i=particles.length-1; i>=0; i--) {
-      const p=particles[i]; p.x+=p.vx; p.y+=p.vy; p.vy+=p.gravity; p.vx*=0.97; p.life--;
-      if(p.life<=0){particles.splice(i,1);continue;}
-      const a=p.life/p.maxLife;
-      ctx.save(); ctx.globalAlpha=a; ctx.fillStyle=p.color;
-      ctx.shadowColor=p.color; ctx.shadowBlur=8;
-      ctx.beginPath(); ctx.arc(p.x,p.y,p.size*a,0,Math.PI*2); ctx.fill(); ctx.restore();
-    }
-
-    rafId = requestAnimationFrame(tick);
-  }
-
-  // Fade in overlay then start
-  ov.style.transition='opacity .2s ease';
-  setTimeout(()=>{ ov.style.opacity='1'; rafId=requestAnimationFrame(tick); }, 20);
-  ov._stop = ()=>{ if(rafId) cancelAnimationFrame(rafId); };
-
-  // Click anywhere to skip
-  ov.onclick = ()=>{ if(phase<3){ phase=3; _dismissClash(cfg.id); } };
-}
+// clash engine removed
 
 function _dismissClash(matchId) {
   const ov = document.getElementById('clashOverlay');
@@ -1006,4 +571,3 @@ function _dismissClash(matchId) {
     if(matchId!=null) _doOpenMatchDetail(matchId);
   }, 360);
 }
-</script>
